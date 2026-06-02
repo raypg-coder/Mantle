@@ -322,6 +322,50 @@ pub fn toggle(skill_path: &str, enable: bool) -> Result<String, String> {
     Ok(new_path.to_string_lossy().to_string())
 }
 
+fn copy_dir(src: &Path, dst: &Path) -> Result<(), String> {
+    fs::create_dir_all(dst).map_err(|e| e.to_string())?;
+    for entry in fs::read_dir(src).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let from = entry.path();
+        let to = dst.join(entry.file_name());
+        if from.is_dir() {
+            copy_dir(&from, &to)?;
+        } else {
+            fs::copy(&from, &to).map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
+}
+
+/// Relocate a skill directory into `dest_root` (e.g. global ↔ project).
+/// Preserves the `.disabled` suffix. Returns the new path.
+pub fn move_skill(skill_path: &str, dest_root: &str) -> Result<String, String> {
+    let src = Path::new(skill_path);
+    if skill_md_path(src).is_none() {
+        return Err("源目录不是有效 skill（缺少 SKILL.md）".into());
+    }
+    let name = src
+        .file_name()
+        .ok_or("invalid skill directory name")?;
+    let dest_dir = Path::new(dest_root);
+    fs::create_dir_all(dest_dir).map_err(|e| e.to_string())?;
+    let dest = dest_dir.join(name);
+
+    if dest == src {
+        return Ok(skill_path.to_string());
+    }
+    if dest.exists() {
+        return Err(format!("目标已存在同名 skill：{}", dest.display()));
+    }
+
+    // try a fast rename; fall back to copy+remove across filesystems
+    if fs::rename(src, &dest).is_err() {
+        copy_dir(src, &dest)?;
+        fs::remove_dir_all(src).map_err(|e| e.to_string())?;
+    }
+    Ok(dest.to_string_lossy().to_string())
+}
+
 pub fn delete(skill_path: &str) -> Result<(), String> {
     let p = Path::new(skill_path);
     if !p.is_dir() {

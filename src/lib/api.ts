@@ -15,6 +15,8 @@ const realApi = {
   auditSkill: (path: string) => invoke<AuditResult>("audit_skill", { path }),
   toggleSkill: (path: string, enable: boolean) =>
     invoke<string>("toggle_skill", { path, enable }),
+  moveSkill: (path: string, destRoot: string) =>
+    invoke<string>("move_skill", { path, destRoot }),
   deleteSkill: (path: string) => invoke<void>("delete_skill", { path }),
 };
 

@@ -103,3 +103,53 @@ echo ""
 echo "════════════════════════════════════════════════"
 echo " ✅ 完成（已签名 + 公证 + staple）: $DMG"
 echo "════════════════════════════════════════════════"
+
+# ─── 5. updater 产物 → latest.json (auto-update) ─────────────
+TARGZ=$(find src-tauri/target/release/bundle/macos -name "*.app.tar.gz" -print -quit 2>/dev/null || true)
+SIG_FILE=$(find src-tauri/target/release/bundle/macos -name "*.app.tar.gz.sig" -print -quit 2>/dev/null || true)
+if [[ -n "$TARGZ" && -f "$TARGZ" && -n "$SIG_FILE" && -f "$SIG_FILE" ]]; then
+  VERSION=$(grep -E '^version' src-tauri/Cargo.toml | head -1 | awk -F '"' '{print $2}')
+  TAG="v${VERSION}"
+  PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  ARCH=$(uname -m)
+  if [[ "$ARCH" == "arm64" ]]; then PLATFORM="darwin-aarch64"; else PLATFORM="darwin-x86_64"; fi
+
+  # ASCII filenames for GitHub upload (skip if already correctly named —
+  # `cp x x` errors "identical" and would abort the script under `set -e`)
+  TARGZ_ASCII="src-tauri/target/release/bundle/macos/Mantle.app.tar.gz"
+  SIG_ASCII="src-tauri/target/release/bundle/macos/Mantle.app.tar.gz.sig"
+  if [[ "$TARGZ" != "$TARGZ_ASCII" ]]; then cp -f "$TARGZ" "$TARGZ_ASCII"; fi
+  if [[ "$SIG_FILE" != "$SIG_ASCII" ]]; then cp -f "$SIG_FILE" "$SIG_ASCII"; fi
+  TARGZ="$TARGZ_ASCII"; SIG_FILE="$SIG_ASCII"
+
+  RELEASE_URL="https://github.com/raypg-coder/Mantle/releases/download/${TAG}/Mantle.app.tar.gz"
+  SIGNATURE=$(cat "$SIG_FILE")
+  LATEST_JSON="src-tauri/target/release/bundle/latest.json"
+  cat > "$LATEST_JSON" <<JSON
+{
+  "version": "${VERSION}",
+  "notes": "See the release page for details.",
+  "pub_date": "${PUB_DATE}",
+  "platforms": {
+    "${PLATFORM}": {
+      "signature": "${SIGNATURE}",
+      "url": "${RELEASE_URL}"
+    }
+  }
+}
+JSON
+  echo ""
+  echo "────────────────────────────────────────────────"
+  echo " 🔄 Auto-update 产物 (上传到 GitHub release ${TAG}):"
+  echo "    DMG:  $DMG"
+  echo "    TGZ:  $TARGZ"
+  echo "    SIG:  $SIG_FILE"
+  echo "    JSON: $LATEST_JSON"
+  echo ""
+  echo " 一键发布:"
+  echo "   gh release create $TAG \"$DMG\" \"$TARGZ\" \"$LATEST_JSON\" \\"
+  echo "     --repo raypg-coder/Mantle --title \"Mantle $TAG\" --generate-notes"
+  echo "────────────────────────────────────────────────"
+else
+  echo "⚠ 没找到 .app.tar.gz / .sig — 检查 tauri.conf.json#bundle.createUpdaterArtifacts + TAURI_SIGNING_PRIVATE_KEY"
+fi

@@ -19,6 +19,7 @@ export function Sidebar() {
   const removeSource = useStore((s) => s.removeSource);
   const theme = useStore((s) => s.theme);
   const toggleTheme = useStore((s) => s.toggleTheme);
+  const setSettingsOpen = useStore((s) => s.setSettingsOpen);
 
   const active = sources.find((s) => s.id === activeSourceId);
 
@@ -89,13 +90,13 @@ export function Sidebar() {
       </button>
 
       <div className="s-foot">
-        <button className="fbtn" title="设置">
+        <button className="fbtn" title="设置" onClick={() => setSettingsOpen(true)}>
           <Settings size={15} strokeWidth={1.7} />
         </button>
         <button className="fbtn" title="切换主题" onClick={toggleTheme}>
           {theme === "dark" ? <Sun size={15} strokeWidth={1.7} /> : <Moon size={15} strokeWidth={1.7} />}
         </button>
-        <span className="ver">v0.1</span>
+        <span className="ver">v0.1.1</span>
       </div>
     </aside>
   );

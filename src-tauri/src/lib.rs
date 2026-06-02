@@ -130,6 +130,11 @@ fn toggle_skill(path: String, enable: bool) -> Result<String, String> {
 }
 
 #[tauri::command]
+fn move_skill(path: String, dest_root: String) -> Result<String, String> {
+    skills::move_skill(&path, &dest_root)
+}
+
+#[tauri::command]
 fn delete_skill(path: String) -> Result<(), String> {
     skills::delete(&path)
 }
@@ -139,6 +144,8 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             list_sources,
             scan_skills,
@@ -148,6 +155,7 @@ pub fn run() {
             read_file,
             audit_skill,
             toggle_skill,
+            move_skill,
             delete_skill
         ])
         .run(tauri::generate_context!())

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RefreshCw, FolderOpen, Trash2, Check, ShieldQuestion } from "lucide-react";
+import { FolderOpen, Trash2, Check, ShieldQuestion, ArrowLeftRight } from "lucide-react";
 import { revealItemInDir, openUrl } from "@tauri-apps/plugin-opener";
 import { useStore } from "../store";
 import { FileBrowser } from "./FileBrowser";
@@ -21,6 +21,7 @@ export function SkillDetail() {
   const skill = useStore((s) => s.skills.find((x) => x.id === s.selectedId));
   const storeAudit = useStore((s) => (skill ? s.audits[skill.path] : undefined));
   const requestDelete = useStore((s) => s.requestDelete);
+  const requestMove = useStore((s) => s.requestMove);
 
   const [md, setMd] = useState<SkillMd | null>(null);
   const [localAudit, setLocalAudit] = useState<AuditResult | null>(null);
@@ -221,9 +222,9 @@ export function SkillDetail() {
       </div>
 
       <div className="actions">
-        <button className="abtn" title="检查更新（即将上线）" disabled>
-          <RefreshCw size={12} strokeWidth={1.7} />
-          更新
+        <button className="abtn" onClick={() => requestMove(skill)} title="移动到其他来源（全局 ↔ 项目）">
+          <ArrowLeftRight size={12} strokeWidth={1.7} />
+          移动
         </button>
         <button className="abtn" onClick={() => revealItemInDir(skill.path).catch(() => {})}>
           <FolderOpen size={12} strokeWidth={1.7} />

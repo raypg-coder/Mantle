@@ -3,6 +3,8 @@ import { useStore } from "./store";
 import { Sidebar } from "./components/Sidebar";
 import { SkillList } from "./components/SkillList";
 import { SkillDetail } from "./components/SkillDetail";
+import { SettingsModal } from "./components/SettingsModal";
+import { MoveModal } from "./components/MoveModal";
 
 function DeleteModal() {
   const skill = useStore((s) => s.pendingDelete);
@@ -45,6 +47,8 @@ export default function App() {
         <SkillDetail />
       </div>
       <DeleteModal />
+      <MoveModal />
+      <SettingsModal />
     </>
   );
 }

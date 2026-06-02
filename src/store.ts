@@ -46,6 +46,8 @@ interface State {
   error: string | null;
   theme: "light" | "dark";
   pendingDelete: SkillEntry | null;
+  pendingMove: SkillEntry | null;
+  settingsOpen: boolean;
 
   init: () => Promise<void>;
   selectSource: (id: string) => Promise<void>;
@@ -58,7 +60,10 @@ interface State {
   toggle: (skill: SkillEntry) => Promise<void>;
   requestDelete: (skill: SkillEntry | null) => void;
   confirmDelete: () => Promise<void>;
+  requestMove: (skill: SkillEntry | null) => void;
+  moveSkill: (skill: SkillEntry, destSourceId: string) => Promise<void>;
   toggleTheme: () => void;
+  setSettingsOpen: (open: boolean) => void;
 }
 
 async function loadSkillsFor(set: any, get: any, source: SourceInfo) {
@@ -103,6 +108,8 @@ export const useStore = create<State>((set, get) => ({
   error: null,
   theme: "light",
   pendingDelete: null,
+  pendingMove: null,
+  settingsOpen: false,
 
   init: async () => {
     try {
@@ -216,9 +223,25 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 
+  requestMove: (skill) => set({ pendingMove: skill }),
+
+  moveSkill: async (skill, destSourceId) => {
+    const dest = get().sources.find((s) => s.id === destSourceId);
+    if (!dest) return;
+    try {
+      await api.moveSkill(skill.path, dest.path);
+      set({ pendingMove: null });
+      await get().refresh(); // re-scan: skill left the active source, counts update
+    } catch (e) {
+      set({ error: String(e), pendingMove: null });
+    }
+  },
+
   toggleTheme: () => {
     const next = get().theme === "dark" ? "light" : "dark";
     document.documentElement.classList.toggle("dark", next === "dark");
     set({ theme: next });
   },
+
+  setSettingsOpen: (open) => set({ settingsOpen: open }),
 }));

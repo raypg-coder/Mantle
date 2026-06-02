@@ -159,7 +159,7 @@ interface AuditFinding {
 - [x] 浏览器 dev-mock 回退（非 Tauri 环境用样例数据，便于设计迭代）
 - [x] 本地未签名构建：`npm run tauri build` → `Mantle.app` + `Mantle_0.1.0_aarch64.dmg`（ad-hoc 签名，本机可直接跑）
 - [x] **签名 + 公证 + staple** DMG：`bash scripts/build-signed-dmg.sh`（复用 MarkFlow 的 Developer ID 证书 + `.env.signing`）。产物 Gatekeeper `Notarized Developer ID`，可分发到任意 Mac
-- [ ] 自定义 app 图标（当前仍是 Tauri 默认 logo）
+- [x] 自定义 app 图标：玻璃砖 + 发光地幔核心（地幔剖面意象）。源文件 `assets/icon.svg`，`tauri icon` 生成整套
 
 > **设计语言**：从 5 个风格方向（见 `ui-gallery.html`：Editorial / Terminal / Glass / Swiss / Aurora）中选定 **Glass**（macOS 通透）。皮肤以手写 CSS（`src/index.css`，CSS 变量 + 组件类）实现，未引入 Tailwind —— 玻璃叠层/渐变/backdrop-filter 用原生 CSS 还原度更高、依赖更少。需要时可后续叠加 Tailwind。
 

@@ -1,4 +1,5 @@
-import { Search, RefreshCw, Plus, Sparkles, ChevronRight, PackageOpen } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Search, RefreshCw, Plus, Sparkles, ChevronRight, PackageOpen, X } from "lucide-react";
 import { useStore, type FilterKey } from "../store";
 import { AUDIT_LABEL, formatBytes, initial, relativeShort } from "../lib/format";
 import type { AuditResult, SkillEntry } from "../types";
@@ -64,6 +65,22 @@ export function SkillList() {
 
   const source = sources.find((s) => s.id === activeSourceId);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      } else if (e.key === "Escape" && document.activeElement === inputRef.current) {
+        setQuery("");
+        inputRef.current?.blur();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [setQuery]);
+
   const counts = {
     all: skills.length,
     enabled: skills.filter((s) => s.enabled).length,
@@ -102,11 +119,25 @@ export function SkillList() {
           <label className="search">
             <Search size={11} strokeWidth={2} />
             <input
+              ref={inputRef}
               value={query}
-              placeholder="搜索"
+              placeholder="搜索技能…"
               onChange={(e) => setQuery(e.target.value)}
             />
-            <span className="kbd">⌘K</span>
+            {query ? (
+              <button
+                className="search-clear"
+                title="清除 (Esc)"
+                onClick={() => {
+                  setQuery("");
+                  inputRef.current?.focus();
+                }}
+              >
+                <X size={12} strokeWidth={2.2} />
+              </button>
+            ) : (
+              <span className="kbd">⌘K</span>
+            )}
           </label>
         </div>
         <button
@@ -155,6 +186,7 @@ export function SkillList() {
             <span className="b">{counts[c.key]}</span>
           </button>
         ))}
+        {q && <span className="chip-result">找到 {visible.length} 个</span>}
       </div>
 
       <div className="list">

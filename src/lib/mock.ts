@@ -128,5 +128,7 @@ export const mockApi = {
   auditSkill: (path: string) => wait(audits[path] ?? { level: "safe" as const, trustScore: 100, scannedFiles: 0, findings: [] }, 200),
   toggleSkill: (path: string, enable: boolean) =>
     wait(enable ? path.replace(/\.disabled$/, "") : `${path}.disabled`),
+  moveSkill: (path: string, destRoot: string) =>
+    wait(`${destRoot}/${path.split("/").pop()}`),
   deleteSkill: (_path: string) => wait(undefined as unknown as void),
 };
