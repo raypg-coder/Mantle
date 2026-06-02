@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mantle · v2 · Premium</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <style>
+      :root {
+        --bg: #F8F3E9; --bg-soft: #F2EBDC; --bg-muted: #E8DEC9;
+        --border: #E0D5BD; --border-strong: #C7B795;
+        --text: #13110D; --text-muted: #5C5341; --text-subtle: #8F8470; --text-faint: #B5A98F;
+        --accent: #C2410C; --accent-soft: rgba(194,65,12,0.10);
+        --accent-glow: rgba(194,65,12,0.20);
+        --success: #15803D; --warning: #B45309; --danger: #B91C1C;
+        --safe-bg: rgba(21,128,61,0.10); --caution-bg: rgba(180,83,9,0.10); --risk-bg: rgba(185,28,28,0.10);
+        --font-sans: "Inter",-apple-system,system-ui,sans-serif;
+        --font-display: "Instrument Serif",Georgia,serif;
+        --font-mono: "JetBrains Mono","SF Mono",Menlo,monospace;
+      }
+      :root.dark {
+        --bg: #0F0E0C; --bg-soft: #18160F; --bg-muted: #1F1C13;
+        --border: #2A2519; --border-strong: #3F3727;
+        --text: #F0EBE0; --text-muted: #BBB098; --text-subtle: #6F6852; --text-faint: #4A4533;
+        --accent: #F97316; --accent-soft: rgba(249,115,22,0.14);
+        --accent-glow: rgba(249,115,22,0.32);
+        --success: #4ADE80; --warning: #FBBF24; --danger: #F87171;
+        --safe-bg: rgba(74,222,128,0.10); --caution-bg: rgba(251,191,36,0.10); --risk-bg: rgba(248,113,113,0.10);
+      }
+
+      *{box-sizing:border-box;margin:0;padding:0}
+      html,body{height:100%}
+      body{
+        background:var(--bg); color:var(--text);
+        font-family:var(--font-sans); font-size:13px;
+        letter-spacing:-0.005em; overflow:hidden;
+        transition:background 320ms,color 320ms;
+        position:relative;
+      }
+      body::before{
+        content:""; position:fixed; inset:0;
+        pointer-events:none; z-index:0;
+        background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.5'/></svg>");
+        opacity:0.035; mix-blend-mode:multiply;
+      }
+      :root.dark body::before{
+        background:
+          radial-gradient(ellipse 50% 40% at 90% 0%, rgba(249,115,22,0.10), transparent 55%),
+          radial-gradient(ellipse 40% 30% at 10% 100%, rgba(249,115,22,0.05), transparent 55%);
+        opacity:1; mix-blend-mode:normal;
+      }
+
+      .demo-bar{position:fixed;top:14px;right:16px;z-index:100;display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:999px;font:500 11px/1 var(--font-sans);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+      .demo-bar .toggle{display:inline-flex;padding:2px;background:var(--bg-soft);border-radius:999px}
+      .demo-bar button{border:none;background:transparent;color:var(--text-muted);cursor:pointer;padding:4px 10px;border-radius:999px;font:inherit;transition:all 150ms}
+      .demo-bar button.on{background:var(--accent);color:white}
+
+      /* ═══════════ App shell · 3 cols ═══════════ */
+      .app{
+        display:grid;
+        grid-template-columns:218px 1fr 420px;
+        height:100vh;
+        position:relative; z-index:1;
+      }
+
+      /* ════════ LEFT · Sources ════════ */
+      .sources{
+        background:transparent;
+        border-right:1px solid var(--border);
+        display:flex; flex-direction:column;
+        padding:18px 0 0;
+      }
+      .brand{display:flex; align-items:center; gap:9px; padding:0 18px 26px}
+      .brand-mark{
+        width:32px; height:32px;
+        background:linear-gradient(135deg, var(--text), color-mix(in oklab, var(--text) 80%, var(--accent)));
+        color:var(--bg);
+        border-radius:8px;
+        display:inline-flex; align-items:center; justify-content:center;
+        font:600 17px/1 var(--font-display); font-style:italic;
+        position:relative;
+        box-shadow:0 1px 0 rgba(255,255,255,0.1) inset, 0 4px 12px rgba(0,0,0,0.08);
+      }
+      .brand-mark::after{
+        content:""; position:absolute; right:-2px; bottom:-2px;
+        width:6px; height:6px; border-radius:50%;
+        background:var(--accent);
+        box-shadow:0 0 0 2px var(--bg), 0 0 12px var(--accent-glow);
+      }
+      .brand-meta{display:flex; flex-direction:column; gap:1px}
+      .brand-name{font:600 14.5px/1 var(--font-sans); letter-spacing:-0.018em}
+      .brand-tag{font:italic 400 11px/1 var(--font-display); color:var(--text-subtle); margin-top:3px}
+
+      .section-label{
+        padding:14px 18px 4px;
+        font:600 9.5px/1 var(--font-sans);
+        text-transform:uppercase; letter-spacing:0.12em;
+        color:var(--text-subtle);
+        display:flex; justify-content:space-between; align-items:center;
+      }
+      .section-label .ct{color:var(--text-faint); font-family:var(--font-mono); font-weight:500; letter-spacing:0}
+
+      .source-row{
+        display:flex; align-items:center; gap:10px;
+        padding:8px 18px;
+        cursor:pointer;
+        font:500 12.5px/1.3 var(--font-sans);
+        color:var(--text-muted);
+        position:relative;
+        transition:color 140ms, transform 200ms cubic-bezier(0.22,1,0.36,1), background 140ms;
+      }
+      .source-row:hover{color:var(--text); transform:translateX(2px); background:color-mix(in oklab, var(--text) 3%, transparent)}
+      .source-row.active{
+        color:var(--text); font-weight:500;
+        background:color-mix(in oklab, var(--text) 4%, transparent);
+      }
+      .source-row.active::before{
+        content:""; position:absolute; left:0; top:8px; bottom:8px;
+        width:2px; background:var(--accent); border-radius:1px;
+      }
+      .source-avatar{
+        width:22px; height:22px; flex-shrink:0;
+        border-radius:5px;
+        display:inline-flex; align-items:center; justify-content:center;
+        font:italic 500 11px/1 var(--font-display);
+        color:white;
+      }
+      .source-avatar.claude{background:linear-gradient(135deg,#D97757,#B5563B)}
+      .source-avatar.markflow{background:linear-gradient(135deg,#C2410C,#7C2D12)}
+      .source-avatar.cursor{background:linear-gradient(135deg,#444,#222); color:var(--text-faint)}
+      .source-avatar.codex{background:var(--bg-muted); color:var(--text-faint)}
+      .src-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis}
+      .src-count{font:500 10.5px/1 var(--font-mono); color:var(--text-faint)}
+      .src-row-extras{
+        padding-left:50px; padding-top:0; padding-bottom:7px;
+        font:400 10px/1 var(--font-mono); color:var(--text-faint);
+        letter-spacing:0;
+      }
+
+      .add-source{
+        margin:14px 14px 0;
+        padding:9px 12px;
+        border:1px dashed var(--border-strong);
+        background:transparent;
+        border-radius:7px;
+        color:var(--text-subtle);
+        font:500 12px/1 var(--font-sans);
+        cursor:pointer;
+        transition:all 160ms;
+        display:flex; align-items:center; justify-content:center; gap:6px;
+      }
+      .add-source:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+
+      .sources-foot{
+        margin-top:auto;
+        padding:14px;
+        border-top:1px solid var(--border);
+        display:flex; align-items:center; gap:2px;
+      }
+      .sources-foot .fbtn{
+        width:30px; height:30px;
+        border:none; background:transparent;
+        color:var(--text-subtle);
+        border-radius:6px; cursor:pointer;
+        display:inline-flex; align-items:center; justify-content:center;
+        transition:all 140ms;
+      }
+      .sources-foot .fbtn:hover{background:var(--bg-soft); color:var(--text); transform:translateY(-1px)}
+      .sources-foot .fbtn svg{width:14px;height:14px;stroke-width:1.6}
+      .sources-foot .version{
+        margin-left:auto;
+        font:500 10px/1 var(--font-mono);
+        color:var(--text-faint);
+      }
+
+      /* ════════ MIDDLE · Skills list ════════ */
+      .middle{display:flex; flex-direction:column; min-width:0; position:relative}
+
+      .topbar{
+        display:flex; align-items:center; gap:10px;
+        padding:16px 22px;
+        height:64px; flex-shrink:0;
+      }
+      .crumb-line{
+        flex:1; min-width:0;
+        display:flex; align-items:center; gap:5px;
+        font:400 12.5px/1 var(--font-sans);
+        color:var(--text-subtle);
+      }
+      .crumb{padding:4px 8px; border-radius:5px; cursor:pointer; transition:all 150ms cubic-bezier(0.22,1,0.36,1); display:inline-flex; align-items:center; gap:6px}
+      .crumb:hover:not(.current){background:var(--bg-soft); color:var(--text); transform:translateY(-1px)}
+      .crumb.current{color:var(--text); font-weight:500; cursor:default}
+      .crumb-sep{color:var(--text-faint); font:italic 400 15px/1 var(--font-display)}
+
+      .crumb-line .search-pill{
+        margin-left:14px;
+        display:inline-flex; align-items:center; gap:7px;
+        padding:5px 11px;
+        background:var(--bg-soft);
+        border:1px solid var(--border);
+        border-radius:7px;
+        font:500 11.5px/1 var(--font-sans);
+        color:var(--text-muted);
+        cursor:pointer;
+        transition:all 150ms;
+      }
+      .search-pill:hover{border-color:var(--border-strong); color:var(--text)}
+      .search-pill .kbd{font:500 10px/1 var(--font-mono); color:var(--text-faint); padding:1px 5px; background:var(--bg); border:1px solid var(--border); border-radius:3px}
+
+      .icon-btn{width:30px;height:30px;border:none;background:transparent;color:var(--text-muted);border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all 160ms cubic-bezier(0.22,1,0.36,1)}
+      .icon-btn:hover{background:var(--bg-soft);color:var(--text);transform:translateY(-1px)}
+      .icon-btn svg{width:14px;height:14px;stroke-width:1.6}
+
+      .install-btn{
+        padding:7px 13px;
+        background:var(--text); color:var(--bg);
+        border:none; border-radius:7px;
+        font:500 12px/1 var(--font-sans);
+        cursor:pointer;
+        display:inline-flex; align-items:center; gap:6px;
+        transition:all 160ms;
+        box-shadow:0 2px 8px rgba(0,0,0,0.08);
+      }
+      .install-btn:hover{transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,0,0,0.15)}
+      .install-btn svg{width:11px;height:11px;stroke-width:2.4}
+
+      /* Heading area: total counter as hero */
+      .list-hero{
+        padding:0 22px 18px;
+        border-bottom:1px solid var(--border);
+      }
+      .list-title{
+        font:400 26px/1.1 var(--font-display); font-style:italic;
+        color:var(--text); margin-bottom:5px;
+      }
+      .list-title em{color:var(--accent); font-style:italic}
+      .list-subtitle{
+        font:400 13px/1.4 var(--font-sans);
+        color:var(--text-subtle);
+        display:flex; align-items:center; gap:14px;
+      }
+      .list-subtitle .pill{
+        padding:2px 9px; border-radius:999px;
+        background:var(--bg-soft);
+        font:500 11px/1 var(--font-sans);
+        color:var(--text-muted);
+      }
+
+      .filter-bar{
+        display:flex; align-items:center; gap:5px;
+        padding:14px 22px 10px;
+        font:500 11.5px/1 var(--font-sans);
+        color:var(--text-subtle);
+      }
+      .filter-bar .chip{
+        padding:5px 10px;
+        border-radius:999px;
+        cursor:pointer;
+        transition:all 150ms;
+      }
+      .filter-bar .chip:hover{background:var(--bg-soft)}
+      .filter-bar .chip.on{background:var(--text); color:var(--bg)}
+      .filter-bar .chip .badge{
+        margin-left:4px; padding:0 5px; border-radius:6px;
+        background:color-mix(in oklab, var(--accent) 18%, transparent);
+        color:var(--accent); font-size:10px;
+      }
+
+      /* Skills list */
+      .skill-list{flex:1; overflow-y:auto; padding:8px 16px 32px}
+
+      /* ─── Featured skill card · large ─── */
+      .skill-featured{
+        position:relative;
+        padding:22px 24px;
+        margin:8px 0 14px;
+        background:linear-gradient(135deg, color-mix(in oklab, var(--accent) 4%, var(--bg-soft)), var(--bg-soft));
+        border:1px solid color-mix(in oklab, var(--accent) 18%, var(--border));
+        border-radius:14px;
+        cursor:pointer;
+        transition:all 200ms cubic-bezier(0.22,1,0.36,1);
+        overflow:hidden;
+      }
+      .skill-featured::before{
+        content:""; position:absolute; top:0; left:0; right:0; height:1px;
+        background:linear-gradient(90deg, transparent, color-mix(in oklab, white 40%, transparent), transparent);
+      }
+      .skill-featured:hover{
+        transform:translateY(-2px);
+        box-shadow:0 8px 24px rgba(0,0,0,0.06);
+      }
+      .featured-banner{
+        position:absolute; top:14px; right:14px;
+        padding:3px 9px;
+        font:600 9.5px/1 var(--font-sans);
+        letter-spacing:0.1em; text-transform:uppercase;
+        color:var(--accent);
+        background:var(--accent-soft);
+        border-radius:999px;
+      }
+      .featured-head{display:flex; align-items:flex-start; gap:14px}
+      .featured-icon{
+        width:48px; height:48px; flex-shrink:0;
+        background:var(--accent); color:white;
+        border-radius:10px;
+        display:inline-flex; align-items:center; justify-content:center;
+        font:italic 500 22px/1 var(--font-display);
+        box-shadow:0 1px 0 rgba(255,255,255,0.15) inset, 0 4px 12px var(--accent-soft);
+      }
+      .featured-meta{flex:1; min-width:0; padding-right:80px}
+      .featured-name{
+        font:600 17px/1.2 var(--font-sans);
+        letter-spacing:-0.018em;
+        color:var(--text);
+        display:flex; align-items:center; gap:8px;
+      }
+      .featured-name .ver{
+        font:italic 400 12.5px/1 var(--font-display);
+        color:var(--accent);
+        margin-top:4px;
+      }
+      .featured-desc{
+        font:400 12.5px/1.55 var(--font-sans);
+        color:var(--text-muted);
+        margin-top:8px;
+      }
+      .featured-foot{
+        display:flex; align-items:center; gap:12px;
+        margin-top:14px; padding-top:14px;
+        border-top:1px solid color-mix(in oklab, var(--accent) 10%, var(--border));
+        font:500 10.5px/1 var(--font-mono);
+        color:var(--text-faint);
+      }
+      .featured-foot .audit{display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:999px; font:600 9.5px/1 var(--font-sans); letter-spacing:0.04em}
+      .featured-foot .audit.safe{background:var(--safe-bg); color:var(--success)}
+      .featured-foot .audit.caution{background:var(--caution-bg); color:var(--warning)}
+      .featured-foot .audit .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+      /* ─── Compact skill rows ─── */
+      .skill-row{
+        display:flex; align-items:center; gap:14px;
+        padding:13px 16px;
+        margin:0;
+        cursor:pointer;
+        border-radius:9px;
+        transition:all 180ms cubic-bezier(0.22,1,0.36,1);
+        border:1px solid transparent;
+      }
+      .skill-row:hover{background:var(--bg-soft); transform:translateX(2px)}
+      .skill-row.active{
+        background:var(--bg-soft); border-color:var(--border);
+      }
+      .skill-row.disabled{opacity:0.55}
+      .skill-row .row-icon{
+        width:36px; height:36px; flex-shrink:0;
+        background:var(--bg-muted);
+        border-radius:8px;
+        display:inline-flex; align-items:center; justify-content:center;
+        font:italic 500 15px/1 var(--font-display);
+        color:var(--text-muted);
+      }
+      .skill-row .row-info{flex:1; min-width:0}
+      .skill-row .row-name{
+        font:600 13.5px/1.2 var(--font-sans);
+        letter-spacing:-0.012em;
+        color:var(--text);
+        margin-bottom:3px;
+        display:flex; align-items:center; gap:7px;
+      }
+      .skill-row.disabled .row-name::after{
+        content:"已禁用"; padding:1px 6px;
+        background:var(--bg-muted); color:var(--text-subtle);
+        font:500 9.5px/1 var(--font-mono); border-radius:999px;
+        text-transform:uppercase; letter-spacing:0.06em;
+      }
+      .skill-row .row-desc{
+        font:400 11.5px/1.4 var(--font-sans);
+        color:var(--text-muted);
+        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        max-width:360px;
+      }
+      .skill-row .row-stat{
+        display:flex; flex-direction:column; align-items:flex-end; gap:5px;
+        flex-shrink:0;
+      }
+      .skill-row .row-audit{
+        font:600 9.5px/1 var(--font-sans); letter-spacing:0.05em;
+        padding:3px 8px; border-radius:999px;
+      }
+      .skill-row .row-audit.safe{background:var(--safe-bg); color:var(--success)}
+      .skill-row .row-audit.caution{background:var(--caution-bg); color:var(--warning)}
+      .skill-row .row-audit.risk{background:var(--risk-bg); color:var(--danger)}
+      .skill-row .row-meta{
+        font:500 10.5px/1 var(--font-mono);
+        color:var(--text-faint);
+        display:flex; gap:8px;
+      }
+      .skill-row .row-meta .sep{opacity:0.4}
+
+      .toggle-switch{
+        width:30px; height:18px;
+        background:var(--border-strong); border-radius:999px;
+        position:relative; cursor:pointer;
+        transition:background 240ms;
+        flex-shrink:0;
+      }
+      .toggle-switch::after{
+        content:""; position:absolute;
+        top:2px; left:2px;
+        width:14px; height:14px;
+        background:white; border-radius:50%;
+        transition:transform 240ms cubic-bezier(0.34,1.56,0.64,1);
+        box-shadow:0 1px 3px rgba(0,0,0,0.18);
+      }
+      .toggle-switch.on{background:var(--accent)}
+      .toggle-switch.on::after{transform:translateX(12px)}
+
+      /* ════════ RIGHT · Passport-style detail ════════ */
+      .detail{
+        background:var(--bg);
+        border-left:1px solid var(--border);
+        display:flex; flex-direction:column;
+        min-width:0; position:relative;
+        overflow:hidden;
+      }
+      /* Subtle aurora at top */
+      .detail::before{
+        content:""; position:absolute; inset:0 0 auto 0; height:240px;
+        background:radial-gradient(ellipse 60% 100% at 50% 0%, var(--accent-soft), transparent 70%);
+        pointer-events:none; z-index:0;
+      }
+
+      .detail-scroll{flex:1; overflow-y:auto; position:relative; z-index:1}
+
+      .passport-head{
+        padding:28px 28px 20px;
+        text-align:left;
+      }
+      .passport-icon{
+        width:64px; height:64px;
+        background:var(--accent); color:white;
+        border-radius:14px;
+        display:inline-flex; align-items:center; justify-content:center;
+        font:italic 500 30px/1 var(--font-display);
+        box-shadow:0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 24px var(--accent-glow);
+        margin-bottom:18px;
+        position:relative;
+      }
+      .passport-icon::after{
+        content:""; position:absolute; right:-4px; bottom:-4px;
+        width:18px; height:18px; border-radius:50%;
+        background:var(--success); border:3px solid var(--bg);
+        display:flex; align-items:center; justify-content:center;
+      }
+      .passport-icon::before{
+        content:""; position:absolute; right:0; bottom:0;
+        width:10px; height:10px; z-index:2;
+        background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+        background-size:contain; background-repeat:no-repeat;
+        transform:translate(2px, 2px);
+      }
+      .passport-name{
+        font:400 32px/1.05 var(--font-display);
+        letter-spacing:-0.015em;
+        color:var(--text);
+        margin-bottom:8px;
+      }
+      .passport-meta-line{
+        display:flex; align-items:center; gap:12px;
+        font:400 12.5px/1 var(--font-sans);
+        color:var(--text-subtle);
+      }
+      .passport-meta-line .ver{
+        font:italic 500 14px/1 var(--font-display);
+        color:var(--accent);
+      }
+      .passport-meta-line .verified{
+        display:inline-flex; align-items:center; gap:4px;
+        padding:3px 8px;
+        background:var(--safe-bg); color:var(--success);
+        border-radius:999px;
+        font:600 10px/1 var(--font-sans); letter-spacing:0.04em;
+      }
+      .passport-meta-line .sep{color:var(--text-faint); opacity:0.5}
+
+      .passport-desc{
+        margin:22px 28px 6px;
+        font:400 13.5px/1.65 var(--font-sans);
+        color:var(--text-muted);
+        padding:14px 16px;
+        background:color-mix(in oklab, var(--text) 3%, transparent);
+        border-radius:8px;
+        border-left:2px solid var(--accent);
+      }
+
+      /* ─── Trust Score · the HERO moment ─── */
+      .trust-section{
+        margin:24px 28px;
+        padding:22px 24px;
+        background:var(--bg);
+        border:1px solid var(--border);
+        border-radius:14px;
+        position:relative;
+        overflow:hidden;
+      }
+      .trust-section::before{
+        content:""; position:absolute; top:0; left:0; right:0; height:1px;
+        background:linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 30%, transparent), transparent);
+      }
+
+      .trust-display{
+        display:flex; align-items:flex-end; gap:24px;
+        margin-bottom:20px;
+      }
+      .trust-score{
+        font:400 76px/0.9 var(--font-display); font-style:italic;
+        color:var(--text); letter-spacing:-0.04em;
+        font-feature-settings:"tnum";
+        position:relative;
+      }
+      .trust-score .ofx{
+        position:absolute; bottom:8px; left:100%;
+        margin-left:6px;
+        font:italic 400 18px/1 var(--font-display);
+        color:var(--text-faint);
+        letter-spacing:0;
+      }
+      .trust-summary{flex:1; padding-bottom:6px}
+      .trust-summary .label{
+        font:600 10.5px/1 var(--font-sans);
+        text-transform:uppercase; letter-spacing:0.12em;
+        color:var(--text-subtle);
+        margin-bottom:6px;
+      }
+      .trust-summary .verdict{
+        font:500 14px/1.3 var(--font-sans);
+        color:var(--text);
+      }
+      .trust-summary .verdict em{color:var(--accent); font-style:italic; font-family:var(--font-display); font-weight:400; font-size:1.15em}
+
+      .trust-breakdown{display:flex; flex-direction:column; gap:10px}
+      .trust-row{
+        display:flex; align-items:center; gap:14px;
+        font:500 12px/1.3 var(--font-sans);
+      }
+      .trust-row .name{
+        flex:1; color:var(--text-muted);
+      }
+      .trust-row .dots{
+        display:inline-flex; gap:3px;
+        font-family:var(--font-mono);
+      }
+      .trust-row .dots .d{
+        width:6px; height:6px; border-radius:50%;
+        background:var(--bg-muted);
+      }
+      .trust-row .dots .d.on{background:var(--accent)}
+      .trust-row .value{
+        font:500 11px/1 var(--font-mono);
+        color:var(--text); min-width:34px; text-align:right;
+        font-feature-settings:"tnum";
+      }
+
+      /* Section title */
+      .section-divider{
+        display:flex; align-items:center; gap:12px;
+        margin:28px 28px 14px;
+        font:600 10px/1 var(--font-sans);
+        color:var(--text-subtle);
+        text-transform:uppercase; letter-spacing:0.13em;
+      }
+      .section-divider .line{
+        flex:1; height:1px; background:var(--border);
+      }
+
+      /* Findings */
+      .findings{padding:0 28px}
+      .finding{
+        display:flex; gap:12px;
+        padding:14px 14px;
+        background:var(--bg-soft);
+        border-radius:9px;
+        margin-bottom:8px;
+        font-size:12.5px;
+      }
+      .finding .sev-cap{
+        flex-shrink:0;
+        width:6px; align-self:stretch;
+        border-radius:99px;
+      }
+      .finding.warn .sev-cap{background:var(--warning)}
+      .finding.info .sev-cap{background:var(--success)}
+      .finding-body{flex:1; min-width:0}
+      .finding .pattern-line{
+        display:flex; align-items:center; gap:8px;
+        margin-bottom:4px;
+      }
+      .finding .pattern{font-family:var(--font-mono); font-weight:600; color:var(--text); font-size:12.5px}
+      .finding .sev-tag{
+        font:600 9.5px/1 var(--font-sans); letter-spacing:0.05em;
+        padding:2px 7px; border-radius:999px;
+      }
+      .finding.warn .sev-tag{background:var(--caution-bg); color:var(--warning)}
+      .finding.info .sev-tag{background:var(--safe-bg); color:var(--success)}
+      .finding .file{
+        font:500 11px/1.4 var(--font-mono);
+        color:var(--text-subtle);
+        margin-bottom:6px;
+      }
+      .finding .ctx{
+        font:400 11.5px/1.55 var(--font-mono);
+        color:var(--text-muted);
+        padding:8px 10px;
+        background:var(--bg);
+        border:1px solid var(--border);
+        border-radius:6px;
+        overflow-x:auto; white-space:nowrap;
+      }
+      .finding .ctx .hl{
+        background:var(--caution-bg); color:var(--warning);
+        padding:0 3px; border-radius:2px; font-weight:500;
+      }
+
+      /* Provenance card */
+      .provenance{
+        margin:24px 28px;
+        padding:16px;
+        background:var(--bg-soft);
+        border:1px solid var(--border);
+        border-radius:10px;
+      }
+      .prov-row{
+        display:flex; align-items:center; gap:10px;
+        padding:6px 0;
+        font:400 12px/1.3 var(--font-sans);
+        color:var(--text-muted);
+      }
+      .prov-row + .prov-row{border-top:1px dashed var(--border)}
+      .prov-row .k{
+        width:78px; flex-shrink:0;
+        font:600 10px/1 var(--font-sans);
+        text-transform:uppercase; letter-spacing:0.11em;
+        color:var(--text-subtle);
+      }
+      .prov-row .v{flex:1; color:var(--text); font-family:var(--font-mono); font-size:11.5px}
+      .prov-row .v a{color:var(--accent); text-decoration:none}
+
+      /* Actions */
+      .detail-actions{
+        padding:16px 28px;
+        border-top:1px solid var(--border);
+        display:flex; gap:8px; flex-shrink:0;
+        background:var(--bg);
+        position:relative; z-index:2;
+      }
+      .action-btn{
+        padding:8px 14px;
+        border:1px solid var(--border);
+        background:transparent;
+        color:var(--text-muted);
+        font:500 12px/1 var(--font-sans);
+        border-radius:8px;
+        cursor:pointer;
+        transition:all 160ms;
+        display:inline-flex; align-items:center; gap:6px;
+      }
+      .action-btn:hover{border-color:var(--border-strong); color:var(--text); transform:translateY(-1px)}
+      .action-btn svg{width:12px;height:12px;stroke-width:1.7}
+      .action-btn.danger{color:var(--danger); border-color:color-mix(in oklab,var(--danger) 25%,transparent)}
+      .action-btn.danger:hover{background:var(--risk-bg); border-color:var(--danger)}
+      .action-btn.primary{
+        background:var(--text); color:var(--bg); border-color:var(--text);
+        box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      }
+      .action-btn.primary:hover{transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,0,0,0.15)}
+
+      /* Scrollbar */
+      ::-webkit-scrollbar{width:8px;height:8px;background:transparent}
+      ::-webkit-scrollbar-thumb{background:transparent;border-radius:999px;border:2px solid transparent;background-clip:padding-box;transition:background-color 200ms}
+      *:hover > ::-webkit-scrollbar-thumb,*:hover::-webkit-scrollbar-thumb{background-color:color-mix(in oklab, var(--text) 14%, transparent)}
+
+      /* Animations */
+      @keyframes fadeSlideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+      @keyframes dropCapIn{from{opacity:0;transform:scale(0.6) rotate(-10deg)}50%{opacity:1;transform:scale(1.06) rotate(2deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+      @keyframes accentDotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:0.6}}
+      @keyframes scoreReveal{
+        from{opacity:0; transform:translateY(20px); letter-spacing:0.1em}
+        to{opacity:1; transform:translateY(0); letter-spacing:-0.04em}
+      }
+      @keyframes dotFill{from{transform:scale(0)}to{transform:scale(1)}}
+
+      .brand{animation:fadeSlideUp 500ms cubic-bezier(0.22,1,0.36,1) both}
+      .brand-mark::after{animation:accentDotPulse 3s ease-in-out 2s infinite}
+      .source-row{animation:fadeSlideUp 400ms cubic-bezier(0.22,1,0.36,1) both}
+      .source-row:nth-child(2){animation-delay:60ms}
+      .source-row:nth-child(3){animation-delay:120ms}
+      .source-row:nth-child(4){animation-delay:180ms}
+      .source-row:nth-child(5){animation-delay:240ms}
+
+      .list-hero{animation:fadeSlideUp 500ms cubic-bezier(0.22,1,0.36,1) 100ms both}
+      .filter-bar{animation:fadeSlideUp 400ms cubic-bezier(0.22,1,0.36,1) 200ms both}
+      .skill-featured{animation:fadeSlideUp 500ms cubic-bezier(0.22,1,0.36,1) 280ms both}
+      .skill-row{animation:fadeSlideUp 400ms cubic-bezier(0.22,1,0.36,1) both}
+      .skill-list .skill-row:nth-of-type(1){animation-delay:380ms}
+      .skill-list .skill-row:nth-of-type(2){animation-delay:440ms}
+      .skill-list .skill-row:nth-of-type(3){animation-delay:500ms}
+      .skill-list .skill-row:nth-of-type(4){animation-delay:560ms}
+
+      .detail{animation:fadeIn 600ms ease-out 200ms both}
+      .passport-icon{animation:dropCapIn 800ms cubic-bezier(0.34,1.56,0.64,1) 400ms both}
+      .passport-name{animation:fadeSlideUp 600ms cubic-bezier(0.22,1,0.36,1) 500ms both}
+      .passport-meta-line{animation:fadeSlideUp 500ms cubic-bezier(0.22,1,0.36,1) 600ms both}
+      .passport-desc{animation:fadeSlideUp 500ms cubic-bezier(0.22,1,0.36,1) 700ms both}
+      .trust-section{animation:fadeSlideUp 500ms cubic-bezier(0.22,1,0.36,1) 800ms both}
+      .trust-score{animation:scoreReveal 900ms cubic-bezier(0.22,1,0.36,1) 1000ms both}
+      .trust-row{animation:fadeSlideUp 400ms cubic-bezier(0.22,1,0.36,1) both}
+      .trust-row:nth-child(1){animation-delay:1300ms}
+      .trust-row:nth-child(2){animation-delay:1400ms}
+      .trust-row:nth-child(3){animation-delay:1500ms}
+      .trust-row:nth-child(4){animation-delay:1600ms}
+      .trust-row .d.on{animation:dotFill 400ms cubic-bezier(0.34,1.56,0.64,1) both}
+      .trust-row:nth-child(1) .d:nth-child(1).on{animation-delay:1350ms}
+      .trust-row:nth-child(1) .d:nth-child(2).on{animation-delay:1380ms}
+      .trust-row:nth-child(1) .d:nth-child(3).on{animation-delay:1410ms}
+      .trust-row:nth-child(1) .d:nth-child(4).on{animation-delay:1440ms}
+      .trust-row:nth-child(1) .d:nth-child(5).on{animation-delay:1470ms}
+
+      .finding{animation:fadeSlideUp 400ms cubic-bezier(0.22,1,0.36,1) both}
+      .findings .finding:nth-of-type(1){animation-delay:1700ms}
+      .findings .finding:nth-of-type(2){animation-delay:1780ms}
+
+      @media (prefers-reduced-motion: reduce){
+        *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="demo-bar">
+      <div class="toggle">
+        <button id="t-light" class="on">浅</button>
+        <button id="t-dark">深</button>
+      </div>
+    </div>
+
+    <div class="app">
+
+      <!-- ════ LEFT · Sources ════ -->
+      <aside class="sources">
+        <div class="brand">
+          <div class="brand-mark">M</div>
+          <div class="brand-meta">
+            <div class="brand-name">Mantle</div>
+            <div class="brand-tag">skill manager</div>
+          </div>
+        </div>
+
+        <div class="section-label">
+          <span>来源</span>
+          <span class="ct">5</span>
+        </div>
+
+        <div class="source-row active">
+          <span class="source-avatar claude">C</span>
+          <span class="src-name">Claude · Global</span>
+          <span class="src-count">5</span>
+        </div>
+        <div class="src-row-extras">~/.claude/skills · 2 分钟前</div>
+
+        <div class="source-row">
+          <span class="source-avatar markflow">M</span>
+          <span class="src-name">MarkFlow</span>
+          <span class="src-count">0</span>
+        </div>
+        <div class="source-row">
+          <span class="source-avatar cursor">⌘</span>
+          <span class="src-name">Cursor</span>
+          <span class="src-count">—</span>
+        </div>
+        <div class="source-row">
+          <span class="source-avatar codex">CX</span>
+          <span class="src-name">Codex</span>
+          <span class="src-count">—</span>
+        </div>
+
+        <button class="add-source">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          添加目录
+        </button>
+
+        <div class="sources-foot">
+          <button class="fbtn" title="设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+          <button class="fbtn" title="主题"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+          <span class="version">v0.1</span>
+        </div>
+      </aside>
+
+      <!-- ════ MIDDLE · List ════ -->
+      <main class="middle">
+
+        <div class="topbar">
+          <div class="crumb-line">
+            <span class="crumb"><span style="color:var(--text-faint)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg></span>Claude</span>
+            <span class="crumb-sep">›</span>
+            <span class="crumb current">Global</span>
+            <span class="search-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              搜索
+              <span class="kbd">⌘ K</span>
+            </span>
+          </div>
+          <button class="icon-btn" title="刷新">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+          <button class="install-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            安装
+          </button>
+        </div>
+
+        <!-- Editorial heading -->
+        <div class="list-hero">
+          <div class="list-title">五个 <em>技能</em>，安静地等着被召唤。</div>
+          <div class="list-subtitle">
+            <span class="pill">Claude · Global</span>
+            <span>~/.claude/skills</span>
+            <span style="color:var(--text-faint)">·</span>
+            <span style="font:500 12px/1 var(--font-mono); font-feature-settings:'tnum'">6.5 MB · 5 skills</span>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <span class="chip on">全部<span class="badge">5</span></span>
+          <span class="chip">已启用<span class="badge">4</span></span>
+          <span class="chip">已禁用<span class="badge">1</span></span>
+          <span class="chip">有警告<span class="badge">2</span></span>
+        </div>
+
+        <div class="skill-list">
+
+          <!-- Featured skill (currently active) -->
+          <div class="skill-featured">
+            <span class="featured-banner">当前选中</span>
+            <div class="featured-head">
+              <div class="featured-icon">U</div>
+              <div class="featured-meta">
+                <div class="featured-name">ui-ux-pro-max</div>
+                <div class="ver">v2.2.3</div>
+                <div class="featured-desc">UI/UX 设计智能体。包含 67 风格、96 配色、57 字体配对，覆盖 13 主流前端栈。在你触发 plan / build / design / review 关键词时自动激活。</div>
+              </div>
+            </div>
+            <div class="featured-foot">
+              <span class="audit safe"><span class="dot"></span>SAFE</span>
+              <span>668 KB</span>
+              <span style="opacity:0.4">·</span>
+              <span>3 days ago</span>
+              <span style="opacity:0.4">·</span>
+              <span>3 .py</span>
+              <span style="flex:1"></span>
+              <div class="toggle-switch on" onclick="event.stopPropagation()"></div>
+            </div>
+          </div>
+
+          <!-- Compact rows -->
+          <div class="skill-row">
+            <div class="row-icon">F</div>
+            <div class="row-info">
+              <div class="row-name">fireworks-tech-graph</div>
+              <div class="row-desc">技术架构图 · 数据流 · 流程图 · 时序图 · agent / memory · concept map 一键生成</div>
+            </div>
+            <div class="row-stat">
+              <span class="row-audit caution">CAUTION</span>
+              <div class="row-meta"><span>5.8 MB</span><span class="sep">·</span><span>25d</span></div>
+            </div>
+            <div class="toggle-switch on" onclick="event.stopPropagation()"></div>
+          </div>
+
+          <div class="skill-row">
+            <div class="row-icon">K</div>
+            <div class="row-info">
+              <div class="row-name">karpathy-guidelines</div>
+              <div class="row-desc">Behavioral guidelines to reduce common LLM coding mistakes</div>
+            </div>
+            <div class="row-stat">
+              <span class="row-audit safe">SAFE</span>
+              <div class="row-meta"><span>4 KB</span><span class="sep">·</span><span>2mo</span></div>
+            </div>
+            <div class="toggle-switch on" onclick="event.stopPropagation()"></div>
+          </div>
+
+          <div class="skill-row disabled">
+            <div class="row-icon">3</div>
+            <div class="row-info">
+              <div class="row-name">three-js-experimental</div>
+              <div class="row-desc">实验性 3D scene 生成 · 含 subprocess 调用</div>
+            </div>
+            <div class="row-stat">
+              <span class="row-audit risk">RISK</span>
+              <div class="row-meta"><span>2.1 MB</span><span class="sep">·</span><span>1w</span></div>
+            </div>
+            <div class="toggle-switch" onclick="event.stopPropagation()"></div>
+          </div>
+
+          <div class="skill-row">
+            <div class="row-icon">M</div>
+            <div class="row-info">
+              <div class="row-name">modern-web-design</div>
+              <div class="row-desc">Meta-skill: glassmorphism · brutalism · dark mode · responsive layouts</div>
+            </div>
+            <div class="row-stat">
+              <span class="row-audit safe">SAFE</span>
+              <div class="row-meta"><span>42 KB</span><span class="sep">·</span><span>1w</span></div>
+            </div>
+            <div class="toggle-switch on" onclick="event.stopPropagation()"></div>
+          </div>
+
+        </div>
+      </main>
+
+      <!-- ════ RIGHT · Passport ════ -->
+      <aside class="detail">
+        <div class="detail-scroll">
+
+          <div class="passport-head">
+            <div class="passport-icon">U</div>
+            <h1 class="passport-name">ui-ux-pro-max</h1>
+            <div class="passport-meta-line">
+              <span class="ver">v2.2.3</span>
+              <span class="sep">·</span>
+              <span class="verified">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                已验证
+              </span>
+              <span class="sep">·</span>
+              <span>github.com/nextlevelbuilder</span>
+            </div>
+          </div>
+
+          <div class="passport-desc">
+            UI/UX design intelligence. 67 styles, 96 palettes, 57 font pairings, 25 charts, 13 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui).
+          </div>
+
+          <!-- Trust Score hero -->
+          <div class="trust-section">
+            <div class="trust-display">
+              <div class="trust-score">
+                92<span class="ofx">/100</span>
+              </div>
+              <div class="trust-summary">
+                <div class="label">Trust Score</div>
+                <div class="verdict"><em>低风险</em> · 安心使用，建议保持启用</div>
+              </div>
+            </div>
+
+            <div class="trust-breakdown">
+              <div class="trust-row">
+                <span class="name">代码安全</span>
+                <span class="dots">
+                  <span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d"></span>
+                </span>
+                <span class="value">4 / 5</span>
+              </div>
+              <div class="trust-row">
+                <span class="name">来源可信</span>
+                <span class="dots">
+                  <span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span>
+                </span>
+                <span class="value">5 / 5</span>
+              </div>
+              <div class="trust-row">
+                <span class="name">活跃维护</span>
+                <span class="dots">
+                  <span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d"></span>
+                </span>
+                <span class="value">4 / 5</span>
+              </div>
+              <div class="trust-row">
+                <span class="name">近期更新</span>
+                <span class="dots">
+                  <span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d"></span><span class="d"></span>
+                </span>
+                <span class="value">3 / 5</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Findings -->
+          <div class="section-divider">
+            <span>审查发现</span>
+            <span class="line"></span>
+            <span style="color:var(--text-faint); font-family:var(--font-mono); font-weight:500; letter-spacing:0">2</span>
+          </div>
+
+          <div class="findings">
+            <div class="finding warn">
+              <div class="sev-cap"></div>
+              <div class="finding-body">
+                <div class="pattern-line">
+                  <span class="pattern">open(file, 'w')</span>
+                  <span class="sev-tag">WARN</span>
+                </div>
+                <div class="file">scripts/search.py · L42</div>
+                <div class="ctx">with <span class="hl">open(file, 'w')</span> as f: f.write(json.dumps(result))</div>
+              </div>
+            </div>
+
+            <div class="finding warn">
+              <div class="sev-cap"></div>
+              <div class="finding-body">
+                <div class="pattern-line">
+                  <span class="pattern">os.makedirs</span>
+                  <span class="sev-tag">WARN</span>
+                </div>
+                <div class="file">scripts/design_system.py · L17</div>
+                <div class="ctx"><span class="hl">os.makedirs</span>(output_dir, exist_ok=True)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Provenance -->
+          <div class="section-divider">
+            <span>来源信息</span>
+            <span class="line"></span>
+          </div>
+
+          <div class="provenance">
+            <div class="prov-row">
+              <span class="k">仓库</span>
+              <span class="v"><a>github.com/nextlevelbuilder/ui-ux-pro-max-skill</a></span>
+            </div>
+            <div class="prov-row">
+              <span class="k">作者</span>
+              <span class="v">nextlevelbuilder</span>
+            </div>
+            <div class="prov-row">
+              <span class="k">License</span>
+              <span class="v">MIT</span>
+            </div>
+            <div class="prov-row">
+              <span class="k">安装于</span>
+              <span class="v">3 days ago · via uipro CLI</span>
+            </div>
+            <div class="prov-row">
+              <span class="k">最后扫描</span>
+              <span class="v">2 分钟前</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="detail-actions">
+          <button class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            更新
+          </button>
+          <button class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            打开目录
+          </button>
+          <span style="flex:1"></span>
+          <button class="action-btn danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            卸载
+          </button>
+        </div>
+      </aside>
+
+    </div>
+
+    <script>
+      const tLight=document.getElementById("t-light"),tDark=document.getElementById("t-dark");
+      tLight.onclick=()=>{document.documentElement.classList.remove("dark");tLight.classList.add("on");tDark.classList.remove("on")};
+      tDark.onclick=()=>{document.documentElement.classList.add("dark");tDark.classList.add("on");tLight.classList.remove("on")};
+
+      document.querySelectorAll('.toggle-switch').forEach(t=>{
+        t.onclick=(e)=>{e.stopPropagation(); t.classList.toggle('on'); const row=t.closest('.skill-row'); if(row){if(t.classList.contains('on'))row.classList.remove('disabled');else row.classList.add('disabled')}};
+      });
+      document.querySelectorAll('.skill-row, .skill-featured').forEach(c=>{
+        c.onclick=()=>{document.querySelectorAll('.skill-row, .skill-featured').forEach(x=>x.classList.remove('active'));c.classList.add('active')};
+      });
+    </script>
+  </body>
+</html>
