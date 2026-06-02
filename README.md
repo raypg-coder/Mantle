@@ -156,13 +156,15 @@ interface AuditFinding {
 
 ### v0.2 — 2-3 天
 - [x] Audit · 风险扫描器 + 红黄绿等级 + Trust Score（已在 v0.1 提前落地）
-- [x] 搜索 / 筛选（全部·已启用·已禁用·有警告）
+- [x] 搜索 / 筛选（全部·已启用·已禁用·有警告）+ ⌘K 聚焦、Esc/× 清除、实时结果计数
 - [x] 添加任意目录作为来源（文件夹选择对话框）
 - [x] **项目级 skill 扫描**：选项目根目录自动识别 `<root>/.claude/skills`（或直接选 skills 目录），作为「项目来源」入栏，带项目名 + 独立配色 + 可移除，localStorage 持久化
+- [x] **技能在「全局 ↔ 项目」之间移动**（`move_skill`，真实搬目录、保留启用/禁用状态）
+- [x] **Auto-update**（minisign + GitHub releases）：updater + process 插件 + 设置页「检查更新」（下载→安装→重启）；构建产物含 `latest.json`
+- [x] 设置 / 关于面板（版本号 + 检查更新 + 主题）
 - [ ] 按 source 分组的多来源同时浏览
 - [ ] 从本地 `.zip` 导入
 - [ ] 从 GitHub repo URL 导入
-- [ ] Auto-update (minisign + GitHub releases)
 
 ### v0.3 — 1 周
 - [ ] 多 AI 工具支持（Cursor / Codex / Copilot 的 skill 目录）
@@ -187,8 +189,9 @@ interface AuditFinding {
 
 ## Status
 
-🛠️ **v0.1 可运行**。`npm install && npm run tauri dev` 即可启动，扫描本机 `~/.claude/skills`。
-浏览器预览（无需 Tauri）：`npm run dev` → http://localhost:1420 （用样例数据）。
+🚀 **v0.1.1 已发布**（签名 + 公证）：https://github.com/raypg-coder/Mantle/releases/latest
+开发：`npm install && npm run tauri dev`（扫描本机 `~/.claude/skills`）。
+浏览器预览（无需 Tauri）：`npm run dev` → http://localhost:1420 （样例数据）。
 
 ---
 
