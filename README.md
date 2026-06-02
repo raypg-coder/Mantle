@@ -55,15 +55,6 @@ Mantle 把这 3 个事做扎实。
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 复用 MarkFlow 现成基础设施
-
-- **Apple Developer ID 证书** — 同套 `.env.signing` 即可签名公证
-- **`scripts/build-signed-dmg.sh`** — 直接拷过来改个 `productName`
-- **Tauri updater + minisign** — 同套密钥
-- **NSVisualEffectView vibrancy** — 同款玻璃 chrome
-- **设计 token**（Editorial Modernist 调色板 / 字体 / spacing） — 复制 CSS 变量
-
-预估总冷启代码 **30%** 是 MarkFlow 的副本，**70%** 是 Mantle 专属。
 
 ---
 
