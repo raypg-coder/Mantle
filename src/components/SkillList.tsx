@@ -110,7 +110,7 @@ export function SkillList() {
   return (
     <main className="col-list">
       <div className="topbar" data-tauri-drag-region>
-        <div className="crumbs">
+        <div className="crumbs" data-tauri-drag-region>
           <span className="crumb">
             <Sparkles size={12} strokeWidth={1.7} />
             {source?.kind === "claude-global" ? "Claude" : source?.label ?? "—"}

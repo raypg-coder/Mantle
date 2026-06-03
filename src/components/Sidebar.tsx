@@ -35,10 +35,10 @@ export function Sidebar() {
   return (
     <aside className="col-sources" data-tauri-drag-region>
       <div className="brand" data-tauri-drag-region>
-        <div className="brand-mark">M</div>
-        <div className="brand-meta">
-          <div className="brand-name">Mantle</div>
-          <div className="brand-tag">skill manager</div>
+        <div className="brand-mark" data-tauri-drag-region>M</div>
+        <div className="brand-meta" data-tauri-drag-region>
+          <div className="brand-name" data-tauri-drag-region>Mantle</div>
+          <div className="brand-tag" data-tauri-drag-region>skill manager</div>
         </div>
       </div>
 
@@ -96,7 +96,7 @@ export function Sidebar() {
         <button className="fbtn" title="切换主题" onClick={toggleTheme}>
           {theme === "dark" ? <Sun size={15} strokeWidth={1.7} /> : <Moon size={15} strokeWidth={1.7} />}
         </button>
-        <span className="ver">v0.1.4</span>
+        <span className="ver">v0.1.5</span>
       </div>
     </aside>
   );

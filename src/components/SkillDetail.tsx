@@ -75,7 +75,7 @@ export function SkillDetail() {
       <div className="dscroll">
         <div className="phead" data-tauri-drag-region>
           <div className={`pico${safe ? " has-check" : ""}`}>{initial(skill.name)}</div>
-          <h1 className="pname">{skill.name}</h1>
+          <h1 className="pname" data-tauri-drag-region>{skill.name}</h1>
           <div className="pmeta">
             {skill.version && <span className="pver">v{skill.version}</span>}
             {skill.version && <span className="sep">·</span>}

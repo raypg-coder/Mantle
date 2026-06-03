@@ -82,7 +82,7 @@ export function Market() {
   return (
     <div className="market">
       <div className="market-top" data-tauri-drag-region>
-        <div className="market-title">
+        <div className="market-title" data-tauri-drag-region>
           <Store size={17} strokeWidth={1.9} />
           技能市场
         </div>
