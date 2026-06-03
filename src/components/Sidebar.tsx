@@ -96,7 +96,7 @@ export function Sidebar() {
         <button className="fbtn" title="切换主题" onClick={toggleTheme}>
           {theme === "dark" ? <Sun size={15} strokeWidth={1.7} /> : <Moon size={15} strokeWidth={1.7} />}
         </button>
-        <span className="ver">v0.1.1</span>
+        <span className="ver">v0.1.2</span>
       </div>
     </aside>
   );

@@ -48,6 +48,7 @@
   --scroll: rgba(80, 70, 100, 0.25);
   --sidebar: rgba(255, 255, 255, 0.32);
   --detail-bg: rgba(255, 255, 255, 0.32);
+  --modal-bg: rgba(250, 250, 253, 0.92);
   --wallpaper: radial-gradient(ellipse 50% 60% at 8% 0%, rgba(255, 183, 153, 0.55), transparent 55%),
     radial-gradient(ellipse 55% 55% at 95% 8%, rgba(170, 150, 255, 0.5), transparent 55%),
     radial-gradient(ellipse 60% 60% at 60% 100%, rgba(130, 200, 255, 0.45), transparent 60%),
@@ -83,6 +84,7 @@
   --quote-bg: rgba(255, 255, 255, 0.05);
   --sidebar: rgba(20, 20, 28, 0.4);
   --detail-bg: rgba(20, 20, 28, 0.4);
+  --modal-bg: rgba(34, 34, 44, 0.94);
   --scroll: rgba(255, 255, 255, 0.2);
   --wallpaper: radial-gradient(ellipse 50% 60% at 8% 0%, rgba(120, 60, 180, 0.55), transparent 55%),
     radial-gradient(ellipse 55% 55% at 95% 8%, rgba(20, 90, 200, 0.5), transparent 55%),
@@ -1335,7 +1337,7 @@ button {
 .modal {
   width: 380px;
   max-width: calc(100vw - 40px);
-  background: var(--bg2);
+  background: var(--modal-bg);
   border: 1px solid var(--border2);
   border-radius: var(--radius);
   padding: 22px;
