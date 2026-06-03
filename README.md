@@ -190,7 +190,8 @@ interface AuditFinding {
 
 ## Status
 
-🚀 **v0.1.1 已发布**（签名 + 公证）：https://github.com/raypg-coder/Mantle/releases/latest
+🌐 **官网**：https://raypg-coder.github.io/Mantle/ （含下载按钮，自动指向最新签名版）
+🚀 **已发布**（签名 + 公证）：https://github.com/raypg-coder/Mantle/releases/latest
 开发：`npm install && npm run tauri dev`（扫描本机 `~/.claude/skills`）。
 浏览器预览（无需 Tauri）：`npm run dev` → http://localhost:1420 （样例数据）。
 
