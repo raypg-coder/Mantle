@@ -3,7 +3,7 @@ import { X, RefreshCw, Check, Download, ArrowUpCircle } from "lucide-react";
 import { useStore } from "../store";
 
 const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
-const FALLBACK_VERSION = "0.1.5";
+const FALLBACK_VERSION = "0.1.6";
 
 type UpdState =
   | { kind: "idle" }

@@ -4,6 +4,7 @@ import { useStore } from "../store";
 import { api } from "../lib/api";
 import { fetchCatalog, MARKETPLACES, type MarketEntry } from "../lib/marketplace";
 import { initial } from "../lib/format";
+import { MarketDetail } from "./MarketDetail";
 
 type InstallState = "idle" | "installing" | "done" | "error";
 const INSTALLABLE = ["claude-global", "claude-project", "custom"];
@@ -22,6 +23,7 @@ export function Market() {
   const [destId, setDestId] = useState("");
   const [status, setStatus] = useState<Record<string, InstallState>>({});
   const [info, setInfo] = useState<Record<string, string>>({});
+  const [detail, setDetail] = useState<MarketEntry | null>(null);
 
   const dests = useMemo(
     () => sources.filter((s) => s.exists && INSTALLABLE.includes(s.kind)),
@@ -138,7 +140,7 @@ export function Market() {
             {visible.map((e) => {
               const st = status[e.id] ?? "idle";
               return (
-                <div className="mcard" key={e.id}>
+                <div className="mcard" key={e.id} onClick={() => setDetail(e)}>
                   <div className="mcard-head">
                     <div className="mcard-ico">{initial(e.name)}</div>
                     <div className="mcard-meta">
@@ -169,7 +171,13 @@ export function Market() {
                         安装中
                       </button>
                     ) : (
-                      <button className="mcard-install" onClick={() => install(e)}>
+                      <button
+                        className="mcard-install"
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          install(e);
+                        }}
+                      >
                         <Download size={12} strokeWidth={2} />
                         安装
                       </button>
@@ -182,6 +190,15 @@ export function Market() {
           </div>
         )}
       </div>
+
+      {detail && (
+        <MarketDetail
+          entry={detail}
+          status={status[detail.id] ?? "idle"}
+          onInstall={(e) => install(e)}
+          onClose={() => setDetail(null)}
+        />
+      )}
     </div>
   );
 }

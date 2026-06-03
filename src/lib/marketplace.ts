@@ -40,12 +40,99 @@ export const MARKETPLACES: Marketplace[] = [
 const raw = (owner: string, repo: string, ref: string, path: string) =>
   `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${path}`;
 
+function fmValue(fmBlock: string, key: string): string | undefined {
+  const line = fmBlock.split("\n").find((l) => new RegExp(`^${key}\\s*:`, "i").test(l.trim()));
+  if (!line) return undefined;
+  const v = line.replace(/^[^:]*:/, "").trim().replace(/^["']|["']$/g, "");
+  return v || undefined;
+}
+
+function splitFrontmatter(md: string): { fm: string; body: string } {
+  const m = md.match(/^﻿?---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
+  return m ? { fm: m[1], body: m[2] } : { fm: "", body: md };
+}
+
 function parseDescription(md: string): string {
-  const fm = md.match(/^﻿?---\s*\n([\s\S]*?)\n---/);
-  const body = fm ? fm[1] : md;
-  const line = body.split("\n").find((l) => /^description\s*:/i.test(l.trim()));
-  if (!line) return "";
-  return line.replace(/^[^:]*:/, "").trim().replace(/^["']|["']$/g, "");
+  return fmValue(splitFrontmatter(md).fm, "description") ?? "";
+}
+
+export interface EntryDetail {
+  repoUrl: string;
+  version?: string;
+  license?: string;
+  author?: string;
+  description?: string;
+  body?: string; // skill: SKILL.md markdown body
+  files?: string[]; // skill: top-level files
+  skills?: { name: string; path: string }[]; // plugin: bundled skills
+  readme?: string; // plugin: README markdown
+}
+
+const decodeB64 = (s: string) => {
+  try {
+    return decodeURIComponent(escape(atob(s.replace(/\n/g, ""))));
+  } catch {
+    return "";
+  }
+};
+
+export async function fetchEntryDetail(e: MarketEntry): Promise<EntryDetail> {
+  const repoUrl = `https://github.com/${e.owner}/${e.repo}`;
+
+  if (e.kind === "skill") {
+    const md = await fetch(raw(e.owner, e.repo, e.ref, `${e.subpath}/SKILL.md`)).then((r) =>
+      r.ok ? r.text() : "",
+    );
+    const { fm, body } = splitFrontmatter(md);
+    let files: string[] = [];
+    try {
+      const list = await fetch(
+        `https://api.github.com/repos/${e.owner}/${e.repo}/contents/${e.subpath}?ref=${e.ref}`,
+      ).then((r) => (r.ok ? r.json() : []));
+      if (Array.isArray(list)) {
+        files = list
+          .map((f: any) => (f.type === "dir" ? `${f.name}/` : f.name))
+          .sort((a, b) => (a.endsWith("/") === b.endsWith("/") ? a.localeCompare(b) : a.endsWith("/") ? -1 : 1));
+      }
+    } catch {
+      /* rate-limited or offline — show without file list */
+    }
+    return {
+      repoUrl,
+      version: fmValue(fm, "version"),
+      license: fmValue(fm, "license"),
+      author: fmValue(fm, "author") ?? fmValue(fm, "authors"),
+      description: fmValue(fm, "description"),
+      body: body.trim(),
+      files,
+    };
+  }
+
+  // plugin: enumerate bundled skills from the referenced repo + its README
+  const skills: { name: string; path: string }[] = [];
+  let readme = "";
+  try {
+    const tree = await fetch(
+      `https://api.github.com/repos/${e.owner}/${e.repo}/git/trees/HEAD?recursive=1`,
+    ).then((r) => (r.ok ? r.json() : { tree: [] }));
+    for (const t of tree.tree ?? []) {
+      if (t.type === "blob" && /(^|\/)SKILL\.md$/.test(t.path)) {
+        const dir = t.path.replace(/\/SKILL\.md$/, "");
+        skills.push({ name: dir.split("/").pop() || dir, path: dir });
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  try {
+    const rd = await fetch(`https://api.github.com/repos/${e.owner}/${e.repo}/readme`).then((r) =>
+      r.ok ? r.json() : null,
+    );
+    if (rd?.content) readme = decodeB64(rd.content);
+  } catch {
+    /* ignore */
+  }
+  return { repoUrl, description: e.description, skills, readme };
 }
 
 async function fetchMarketplace(m: Marketplace): Promise<MarketEntry[]> {

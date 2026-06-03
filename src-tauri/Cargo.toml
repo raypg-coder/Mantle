@@ -1,6 +1,6 @@
 [package]
 name = "mantle"
-version = "0.1.5"
+version = "0.1.6"
 description = "Skill manager for Claude Code"
 authors = ["raypg-coder"]
 edition = "2021"
