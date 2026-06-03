@@ -130,5 +130,7 @@ export const mockApi = {
     wait(enable ? path.replace(/\.disabled$/, "") : `${path}.disabled`),
   moveSkill: (path: string, destRoot: string) =>
     wait(`${destRoot}/${path.split("/").pop()}`),
+  installFromGithub: (_o: string, _r: string, _ref: string, subpath: string, destRoot: string) =>
+    wait(`${destRoot}/${subpath.split("/").pop()}`, 700),
   deleteSkill: (_path: string) => wait(undefined as unknown as void),
 };

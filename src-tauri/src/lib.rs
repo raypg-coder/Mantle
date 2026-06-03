@@ -135,6 +135,17 @@ fn move_skill(path: String, dest_root: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+fn install_from_github(
+    owner: String,
+    repo: String,
+    git_ref: String,
+    subpath: String,
+    dest_root: String,
+) -> Result<String, String> {
+    skills::install_from_github(&owner, &repo, &git_ref, &subpath, &dest_root)
+}
+
+#[tauri::command]
 fn delete_skill(path: String) -> Result<(), String> {
     skills::delete(&path)
 }
@@ -156,6 +167,7 @@ pub fn run() {
             audit_skill,
             toggle_skill,
             move_skill,
+            install_from_github,
             delete_skill
         ])
         .run(tauri::generate_context!())

@@ -48,6 +48,7 @@ interface State {
   pendingDelete: SkillEntry | null;
   pendingMove: SkillEntry | null;
   settingsOpen: boolean;
+  marketOpen: boolean;
 
   init: () => Promise<void>;
   selectSource: (id: string) => Promise<void>;
@@ -64,6 +65,7 @@ interface State {
   moveSkill: (skill: SkillEntry, destSourceId: string) => Promise<void>;
   toggleTheme: () => void;
   setSettingsOpen: (open: boolean) => void;
+  setMarketOpen: (open: boolean) => void;
 }
 
 async function loadSkillsFor(set: any, get: any, source: SourceInfo) {
@@ -110,6 +112,7 @@ export const useStore = create<State>((set, get) => ({
   pendingDelete: null,
   pendingMove: null,
   settingsOpen: false,
+  marketOpen: false,
 
   init: async () => {
     try {
@@ -244,4 +247,5 @@ export const useStore = create<State>((set, get) => ({
   },
 
   setSettingsOpen: (open) => set({ settingsOpen: open }),
+  setMarketOpen: (open) => set({ marketOpen: open }),
 }));

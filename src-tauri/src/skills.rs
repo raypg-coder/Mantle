@@ -3,6 +3,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::time::UNIX_EPOCH;
 use walkdir::WalkDir;
 
@@ -362,6 +363,69 @@ pub fn move_skill(skill_path: &str, dest_root: &str) -> Result<String, String> {
     if fs::rename(src, &dest).is_err() {
         copy_dir(src, &dest)?;
         fs::remove_dir_all(src).map_err(|e| e.to_string())?;
+    }
+    Ok(dest.to_string_lossy().to_string())
+}
+
+fn shq(s: &str) -> String {
+    format!("'{}'", s.replace('\'', "'\\''"))
+}
+
+fn safe_token(s: &str) -> bool {
+    !s.is_empty()
+        && !s.contains("..")
+        && s.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '/' | '-'))
+}
+
+/// Install a skill from a public GitHub repo subdirectory by streaming the
+/// repo tarball and extracting only `subpath` into `dest_root/<name>`.
+pub fn install_from_github(
+    owner: &str,
+    repo: &str,
+    gitref: &str,
+    subpath: &str,
+    dest_root: &str,
+) -> Result<String, String> {
+    let sub = subpath.trim_start_matches("./").trim_matches('/');
+    for t in [owner, repo, gitref, sub] {
+        if !safe_token(t) {
+            return Err(format!("非法参数：{t}"));
+        }
+    }
+    let name = sub.rsplit('/').next().unwrap_or(sub).to_string();
+    let dest_dir = Path::new(dest_root);
+    fs::create_dir_all(dest_dir).map_err(|e| e.to_string())?;
+    let dest = dest_dir.join(&name);
+    if dest.exists() {
+        return Err(format!("已存在同名技能：{name}（先卸载或改名）"));
+    }
+
+    let strip = sub.split('/').count();
+    let member = format!("{repo}-{gitref}/{sub}");
+    let url = format!("https://codeload.github.com/{owner}/{repo}/tar.gz/{gitref}");
+    let cmd = format!(
+        "set -o pipefail; curl -fsSL {} | tar -xz -C {} --strip-components={} {}",
+        shq(&url),
+        shq(dest_root),
+        strip,
+        shq(&member)
+    );
+
+    let out = Command::new("bash")
+        .arg("-c")
+        .arg(&cmd)
+        .output()
+        .map_err(|e| e.to_string())?;
+    if !out.status.success() {
+        let _ = fs::remove_dir_all(&dest);
+        return Err(format!(
+            "下载/解压失败：{}",
+            String::from_utf8_lossy(&out.stderr).trim()
+        ));
+    }
+    if !dest.join("SKILL.md").is_file() {
+        let _ = fs::remove_dir_all(&dest);
+        return Err("安装后未找到 SKILL.md（来源结构可能有变）".into());
     }
     Ok(dest.to_string_lossy().to_string())
 }

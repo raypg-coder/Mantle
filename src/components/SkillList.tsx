@@ -62,6 +62,7 @@ export function SkillList() {
   const setQuery = useStore((s) => s.setQuery);
   const toggle = useStore((s) => s.toggle);
   const refresh = useStore((s) => s.refresh);
+  const setMarketOpen = useStore((s) => s.setMarketOpen);
 
   const source = sources.find((s) => s.id === activeSourceId);
 
@@ -148,7 +149,7 @@ export function SkillList() {
         >
           <RefreshCw size={14} strokeWidth={1.7} />
         </button>
-        <button className="install" title="安装新 skill（即将上线）">
+        <button className="install" title="从技能市场安装" onClick={() => setMarketOpen(true)}>
           <Plus size={11} strokeWidth={2.6} />
           安装
         </button>
