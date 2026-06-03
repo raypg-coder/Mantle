@@ -146,6 +146,11 @@ fn install_from_github(
 }
 
 #[tauri::command]
+fn install_repo_skills(owner: String, repo: String, dest_root: String) -> Result<Vec<String>, String> {
+    skills::install_repo_skills(&owner, &repo, &dest_root)
+}
+
+#[tauri::command]
 fn delete_skill(path: String) -> Result<(), String> {
     skills::delete(&path)
 }
@@ -168,6 +173,7 @@ pub fn run() {
             toggle_skill,
             move_skill,
             install_from_github,
+            install_repo_skills,
             delete_skill
         ])
         .run(tauri::generate_context!())

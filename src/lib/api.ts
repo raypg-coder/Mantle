@@ -19,6 +19,8 @@ const realApi = {
     invoke<string>("move_skill", { path, destRoot }),
   installFromGithub: (owner: string, repo: string, gitRef: string, subpath: string, destRoot: string) =>
     invoke<string>("install_from_github", { owner, repo, gitRef, subpath, destRoot }),
+  installRepoSkills: (owner: string, repo: string, destRoot: string) =>
+    invoke<string[]>("install_repo_skills", { owner, repo, destRoot }),
   deleteSkill: (path: string) => invoke<void>("delete_skill", { path }),
 };
 

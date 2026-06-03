@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { X, Search, Download, Check, Store, RefreshCw, AlertCircle } from "lucide-react";
+import { X, Search, Download, Check, Store, RefreshCw, AlertCircle, Package } from "lucide-react";
 import { useStore } from "../store";
 import { api } from "../lib/api";
-import { fetchCatalog, type MarketSkill } from "../lib/marketplace";
+import { fetchCatalog, MARKETPLACES, type MarketEntry } from "../lib/marketplace";
 import { initial } from "../lib/format";
 
 type InstallState = "idle" | "installing" | "done" | "error";
@@ -15,12 +15,13 @@ export function Market() {
   const activeSourceId = useStore((s) => s.activeSourceId);
   const refresh = useStore((s) => s.refresh);
 
-  const [catalog, setCatalog] = useState<MarketSkill[] | null>(null);
+  const [catalog, setCatalog] = useState<MarketEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState("全部");
   const [destId, setDestId] = useState("");
   const [status, setStatus] = useState<Record<string, InstallState>>({});
-  const [errs, setErrs] = useState<Record<string, string>>({});
+  const [info, setInfo] = useState<Record<string, string>>({});
 
   const dests = useMemo(
     () => sources.filter((s) => s.exists && INSTALLABLE.includes(s.kind)),
@@ -30,15 +31,15 @@ export function Market() {
   function load() {
     setError(null);
     setCatalog(null);
-    fetchCatalog()
-      .then(setCatalog)
-      .catch((e) => setError(String(e)));
+    fetchCatalog().then(setCatalog).catch((e) => setError(String(e)));
   }
 
   useEffect(() => {
     if (!open) return;
     if (catalog === null && !error) load();
-    setDestId((d) => (dests.some((s) => s.id === d) ? d : dests.find((s) => s.id === activeSourceId)?.id ?? dests[0]?.id ?? ""));
+    setDestId((d) =>
+      dests.some((s) => s.id === d) ? d : dests.find((s) => s.id === activeSourceId)?.id ?? dests[0]?.id ?? "",
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -46,29 +47,37 @@ export function Market() {
 
   const q = query.trim().toLowerCase();
   const visible = (catalog ?? []).filter(
-    (s) => !q || `${s.name} ${s.description}`.toLowerCase().includes(q),
+    (e) =>
+      (tab === "全部" || e.marketplace === tab) &&
+      (!q || `${e.name} ${e.description}`.toLowerCase().includes(q)),
   );
   const dest = dests.find((s) => s.id === destId);
 
-  async function install(skill: MarketSkill) {
+  async function install(entry: MarketEntry) {
     if (!dest) {
-      setStatus((s) => ({ ...s, [skill.id]: "error" }));
-      setErrs((e) => ({ ...e, [skill.id]: "请先在右上角选择安装到的来源" }));
+      setStatus((s) => ({ ...s, [entry.id]: "error" }));
+      setInfo((i) => ({ ...i, [entry.id]: "请先在右上角选择安装到的来源" }));
       return;
     }
-    setStatus((s) => ({ ...s, [skill.id]: "installing" }));
-    setErrs((e) => ({ ...e, [skill.id]: "" }));
+    setStatus((s) => ({ ...s, [entry.id]: "installing" }));
+    setInfo((i) => ({ ...i, [entry.id]: "" }));
     try {
-      await api.installFromGithub(skill.owner, skill.repo, skill.ref, skill.subpath, dest.path);
-      setStatus((s) => ({ ...s, [skill.id]: "done" }));
+      if (entry.kind === "skill") {
+        await api.installFromGithub(entry.owner, entry.repo, entry.ref, entry.subpath, dest.path);
+        setInfo((i) => ({ ...i, [entry.id]: "已安装" }));
+      } else {
+        const names = await api.installRepoSkills(entry.owner, entry.repo, dest.path);
+        setInfo((i) => ({ ...i, [entry.id]: names.length > 1 ? `已安装 ${names.length} 个技能` : "已安装" }));
+      }
+      setStatus((s) => ({ ...s, [entry.id]: "done" }));
       await refresh();
     } catch (e) {
-      setStatus((s) => ({ ...s, [skill.id]: "error" }));
-      setErrs((er) => ({ ...er, [skill.id]: String(e) }));
+      setStatus((s) => ({ ...s, [entry.id]: "error" }));
+      setInfo((i) => ({ ...i, [entry.id]: String(e) }));
     }
   }
 
-  const marketplaces = [...new Set(visible.map((s) => s.marketplace))];
+  const tabs = ["全部", ...MARKETPLACES.map((m) => m.label)];
 
   return (
     <div className="market">
@@ -95,6 +104,18 @@ export function Market() {
         </button>
       </div>
 
+      <div className="market-tabs">
+        {tabs.map((t) => {
+          const n = t === "全部" ? catalog?.length ?? 0 : (catalog ?? []).filter((e) => e.marketplace === t).length;
+          return (
+            <button key={t} className={`chip${tab === t ? " on" : ""}`} onClick={() => setTab(t)}>
+              {t}
+              <span className="b">{n}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="market-body">
         {error ? (
           <div className="empty">
@@ -113,50 +134,52 @@ export function Market() {
             ))}
           </div>
         ) : (
-          <>
-            <div className="market-count">
-              {visible.length} 个技能 · 来自 {marketplaces.join(" · ") || "—"}
-            </div>
-            <div className="market-grid">
-              {visible.map((s) => {
-                const st = status[s.id] ?? "idle";
-                return (
-                  <div className="mcard" key={s.id}>
-                    <div className="mcard-head">
-                      <div className="mcard-ico">{initial(s.name)}</div>
-                      <div className="mcard-meta">
-                        <div className="mcard-name">{s.name}</div>
-                        <div className="mcard-srcname">{s.marketplace}</div>
+          <div className="market-grid">
+            {visible.map((e) => {
+              const st = status[e.id] ?? "idle";
+              return (
+                <div className="mcard" key={e.id}>
+                  <div className="mcard-head">
+                    <div className="mcard-ico">{initial(e.name)}</div>
+                    <div className="mcard-meta">
+                      <div className="mcard-name">{e.name}</div>
+                      <div className="mcard-srcname">
+                        {e.marketplace}
+                        {e.kind === "plugin" && (
+                          <span className="mcard-tag">
+                            <Package size={9} strokeWidth={2.2} />插件
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="mcard-desc">{s.description || "（无描述）"}</div>
-                    <div className="mcard-foot">
-                      <span className="mcard-repo">
-                        {s.owner}/{s.repo}
-                      </span>
-                      {st === "done" ? (
-                        <span className="mcard-done">
-                          <Check size={13} strokeWidth={2.4} />
-                          已安装
-                        </span>
-                      ) : st === "installing" ? (
-                        <button className="mcard-install" disabled>
-                          <RefreshCw size={12} className="spin-i" />
-                          安装中
-                        </button>
-                      ) : (
-                        <button className="mcard-install" onClick={() => install(s)}>
-                          <Download size={12} strokeWidth={2} />
-                          安装
-                        </button>
-                      )}
-                    </div>
-                    {st === "error" && <div className="mcard-err">{errs[s.id]}</div>}
                   </div>
-                );
-              })}
-            </div>
-          </>
+                  <div className="mcard-desc">{e.description || "（无描述）"}</div>
+                  <div className="mcard-foot">
+                    <span className="mcard-repo">
+                      {e.owner}/{e.repo}
+                    </span>
+                    {st === "done" ? (
+                      <span className="mcard-done">
+                        <Check size={13} strokeWidth={2.4} />
+                        {info[e.id] || "已安装"}
+                      </span>
+                    ) : st === "installing" ? (
+                      <button className="mcard-install" disabled>
+                        <RefreshCw size={12} className="spin-i" />
+                        安装中
+                      </button>
+                    ) : (
+                      <button className="mcard-install" onClick={() => install(e)}>
+                        <Download size={12} strokeWidth={2} />
+                        安装
+                      </button>
+                    )}
+                  </div>
+                  {st === "error" && <div className="mcard-err">{info[e.id]}</div>}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

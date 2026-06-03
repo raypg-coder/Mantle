@@ -430,6 +430,84 @@ pub fn install_from_github(
     Ok(dest.to_string_lossy().to_string())
 }
 
+/// Install every skill (dir containing SKILL.md) found in a public GitHub repo.
+/// Used for community marketplaces where a plugin points at an external repo
+/// that may bundle one or more skills. Tries `main` then `master`.
+pub fn install_repo_skills(owner: &str, repo: &str, dest_root: &str) -> Result<Vec<String>, String> {
+    for t in [owner, repo] {
+        if !safe_token(t) {
+            return Err(format!("非法参数：{t}"));
+        }
+    }
+    let dest_dir = Path::new(dest_root);
+    fs::create_dir_all(dest_dir).map_err(|e| e.to_string())?;
+
+    let tmp = std::env::temp_dir().join(format!("mantle-repo-{owner}-{repo}").replace('/', "-"));
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).map_err(|e| e.to_string())?;
+
+    let mut root: Option<PathBuf> = None;
+    for r in ["main", "master"] {
+        let url = format!("https://codeload.github.com/{owner}/{repo}/tar.gz/{r}");
+        let cmd = format!(
+            "set -o pipefail; curl -fsSL {} | tar -xz -C {}",
+            shq(&url),
+            shq(&tmp.to_string_lossy())
+        );
+        let out = Command::new("bash").arg("-c").arg(&cmd).output();
+        let cand = tmp.join(format!("{repo}-{r}"));
+        if matches!(out, Ok(ref o) if o.status.success()) && cand.is_dir() {
+            root = Some(cand);
+            break;
+        }
+        for e in fs::read_dir(&tmp).into_iter().flatten().flatten() {
+            let _ = fs::remove_dir_all(e.path());
+        }
+    }
+    let root = match root {
+        Some(r) => r,
+        None => {
+            let _ = fs::remove_dir_all(&tmp);
+            return Err("无法下载仓库（已尝试 main / master 分支）".into());
+        }
+    };
+
+    let mut installed = Vec::new();
+    let mut skipped = 0usize;
+    for entry in WalkDir::new(&root)
+        .max_depth(6)
+        .into_iter()
+        .filter_entry(|e| e.file_name() != ".git" && e.file_name() != "node_modules")
+        .filter_map(|e| e.ok())
+    {
+        if entry.file_type().is_file() && entry.file_name() == SKILL_FILE {
+            if let Some(skill_dir) = entry.path().parent() {
+                if let Some(name) = skill_dir.file_name().and_then(|n| n.to_str()) {
+                    let dest = dest_dir.join(name);
+                    if dest.exists() {
+                        skipped += 1;
+                        continue;
+                    }
+                    if copy_dir(skill_dir, &dest).is_ok() {
+                        installed.push(name.to_string());
+                    }
+                }
+            }
+        }
+    }
+    let _ = fs::remove_dir_all(&tmp);
+
+    if installed.is_empty() {
+        return Err(if skipped > 0 {
+            "这些技能都已安装".into()
+        } else {
+            "该仓库里没有找到 SKILL.md".into()
+        });
+    }
+    installed.sort();
+    Ok(installed)
+}
+
 pub fn delete(skill_path: &str) -> Result<(), String> {
     let p = Path::new(skill_path);
     if !p.is_dir() {

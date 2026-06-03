@@ -1680,11 +1680,19 @@ button {
   cursor: pointer;
   max-width: 180px;
 }
+.market-tabs {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 22px 4px;
+  flex-wrap: wrap;
+}
 .market-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 18px 22px 32px;
+  padding: 14px 22px 32px;
 }
 .market-count {
   font: 500 11.5px/1 var(--font);
@@ -1743,6 +1751,20 @@ button {
   font: 500 10.5px/1 var(--font);
   color: var(--accent);
   margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mcard-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font: 600 9px/1 var(--font);
+  color: var(--subtle);
+  background: var(--bg3);
+  padding: 2px 6px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
 }
 .mcard-desc {
   flex: 1;

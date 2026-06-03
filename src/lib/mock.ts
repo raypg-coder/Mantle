@@ -132,5 +132,6 @@ export const mockApi = {
     wait(`${destRoot}/${path.split("/").pop()}`),
   installFromGithub: (_o: string, _r: string, _ref: string, subpath: string, destRoot: string) =>
     wait(`${destRoot}/${subpath.split("/").pop()}`, 700),
+  installRepoSkills: (_o: string, repo: string, _destRoot: string) => wait([repo], 800),
   deleteSkill: (_path: string) => wait(undefined as unknown as void),
 };

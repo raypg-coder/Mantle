@@ -162,7 +162,7 @@ interface AuditFinding {
 - [x] **技能在「全局 ↔ 项目」之间移动**（`move_skill`，真实搬目录、保留启用/禁用状态）
 - [x] **Auto-update**（minisign + GitHub releases）：updater + process 插件 + 设置页「检查更新」（下载→安装→重启）；构建产物含 `latest.json`
 - [x] 设置 / 关于面板（版本号 + 检查更新 + 主题）
-- [x] **技能市场**：从遵循 `.claude-plugin/marketplace.json` 标准的公开仓库实时拉取目录（v1 接入 `anthropics/skills` 官方 17 个技能），卡片浏览 + 搜索 + 一键安装到任意来源（GitHub tarball 抽取子目录）
+- [x] **技能市场**：从遵循 `.claude-plugin/marketplace.json` 标准的公开仓库实时拉取目录，卡片浏览 + 按市场筛选 + 搜索 + 一键安装到任意来源。已接入官方 `anthropics/skills`（17 个）+ 社区 `netresearch`（40）/`xiaolai`（15）。两种结构都支持：in-repo 技能（按子目录抽取）与社区「插件」（其 source 指向外部仓库 → 下载该仓库、抽取其全部 SKILL.md）
 - [ ] 按 source 分组的多来源同时浏览
 - [ ] 从本地 `.zip` 导入
 - [ ] 市场聚合更多社区源（claude-plugins-official 等需解析跨仓库 source）
